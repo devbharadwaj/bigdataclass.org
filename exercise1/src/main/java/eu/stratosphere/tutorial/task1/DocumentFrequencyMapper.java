@@ -65,7 +65,7 @@ public class DocumentFrequencyMapper extends MapFunction {
 	 * </ul>
 	 * Note that the stop words "the" and "is" have been removed and everything has been lower cased.
 	 */
-	@Override
+	@Override 
 	public void map(Record record, Collector<Record> collector) {
 		// Document with format "docId, document contents"
 		String document = record.getField(0, StringValue.class).toString();
