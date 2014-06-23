@@ -14,7 +14,13 @@
  **********************************************************************************************************************/
 package eu.stratosphere.tutorial.task1;
 
+import java.util.HashSet;
+
+import com.sun.jersey.server.impl.cdi.Utils;
+
 import eu.stratosphere.api.java.record.functions.MapFunction;
+import eu.stratosphere.tutorial.util.Util;
+import eu.stratosphere.types.IntValue;
 import eu.stratosphere.types.Record;
 import eu.stratosphere.types.StringValue;
 import eu.stratosphere.util.Collector;
@@ -69,7 +75,25 @@ public class DocumentFrequencyMapper extends MapFunction {
 	public void map(Record record, Collector<Record> collector) {
 		// Document with format "docId, document contents"
 		String document = record.getField(0, StringValue.class).toString();
-
+		String docArray[] = document.split(",");
+		StringBuilder text = new StringBuilder();
+		for (int i = 1; i < docArray.length; i++) {
+			text.append(docArray[i]);
+		}
+		String words = text.toString();
+		HashSet<String> uniqWords = new HashSet<String>();
+		HashSet<String> stopWords = Util.STOP_WORDS;
+		for (String word: words.split(" ")) {
+			if (word.matches("\\w") && !stopWords.contains(word)) {
+				uniqWords.add(word);
+			}
+		}
+		for (String uniqWord: uniqWords) {
+			Record emitRecord = new Record();
+			emitRecord.addField(new IntValue(1));
+			emitRecord.addField(new StringValue(uniqWord));
+			collector.collect(emitRecord);
+		}
 		// Implement your solution here
 	}
 }
