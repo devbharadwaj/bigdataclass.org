@@ -94,6 +94,6 @@ public class DocumentFrequencyPlan implements Program, ProgramDescription {
 		Plan toExecute = new DocumentFrequencyPlan().getPlan(inputPath, outputPath);
 		Util.executePlan(toExecute);
 		
-		Util.deleteAllTempFiles();
+		//Util.deleteAllTempFiles();
 	}
 }

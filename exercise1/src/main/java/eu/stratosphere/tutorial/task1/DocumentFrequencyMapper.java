@@ -84,16 +84,17 @@ public class DocumentFrequencyMapper extends MapFunction {
 		HashSet<String> uniqWords = new HashSet<String>();
 		HashSet<String> stopWords = Util.STOP_WORDS;
 		for (String word: words.split(" ")) {
-			if (word.matches("\\w") && !stopWords.contains(word)) {
+			if (word.matches("[\\w!.]+") && !stopWords.contains(word)) {
 				uniqWords.add(word);
 			}
 		}
 		for (String uniqWord: uniqWords) {
 			Record emitRecord = new Record();
-			emitRecord.addField(new IntValue(1));
 			emitRecord.addField(new StringValue(uniqWord));
+			emitRecord.addField(new IntValue(1));
 			collector.collect(emitRecord);
 		}
+		
 		// Implement your solution here
 	}
 }

@@ -19,7 +19,9 @@ import java.util.Iterator;
 import eu.stratosphere.api.java.record.functions.FunctionAnnotation.ConstantFields;
 import eu.stratosphere.api.java.record.functions.ReduceFunction;
 import eu.stratosphere.api.java.record.operators.ReduceOperator.Combinable;
+import eu.stratosphere.types.IntValue;
 import eu.stratosphere.types.Record;
+import eu.stratosphere.types.StringValue;
 import eu.stratosphere.util.Collector;
 
 /**
@@ -43,5 +45,19 @@ public class DocumentFrequencyReducer extends ReduceFunction {
 	@Override
 	public void reduce(Iterator<Record> records, Collector<Record> collector) throws Exception {
 		// Implement your solution here
+		StringValue word = null;
+		IntValue count = new IntValue(0);
+		while (records.hasNext()) {
+			Record currentRecord = records.next();
+			if (word == null) {
+				word = currentRecord.getField(0, StringValue.class);
+			}
+			count.setValue(count.getValue()+currentRecord.getField(1, IntValue.class).getValue());
+		}
+		Record emitRecord = new Record();
+		emitRecord.addField(word);
+		emitRecord.addField(count);
+		collector.collect(emitRecord);
 	}
 }
+	
