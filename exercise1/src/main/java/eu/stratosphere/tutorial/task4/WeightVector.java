@@ -20,7 +20,10 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import eu.stratosphere.tutorial.util.Util;
@@ -32,6 +35,9 @@ import eu.stratosphere.types.Value;
 public class WeightVector implements Value {
 
 	private static final long serialVersionUID = 1L;
+	private int docId;
+	private List<String> termList = new ArrayList<String>();
+	private List<Double> weightList = new ArrayList<Double>();
 
 	// - Internal state -----------------------------------------------------------------------------------------------
 
@@ -48,7 +54,7 @@ public class WeightVector implements Value {
 	 *        Document ID
 	 */
 	public void setDocId(int docId) {
-		// Implement your solution here
+		this.docId = docId;
 	}
 
 	/**
@@ -60,14 +66,16 @@ public class WeightVector implements Value {
 	 *        Weight of term
 	 */
 	public void add(String term, double weight) {
-		// Implement your solution here
+		termList.add(term);
+		weightList.add(weight);
 	}
 
 	/**
 	 * Clears the contents of the vector.
 	 */
 	public void clear() {
-		// Implement your solution here
+		termList = new ArrayList<String>();
+		weightList = new ArrayList<Double>();
 	}
 
 	// ----------------------------------------------------------------------------------------------------------------
@@ -80,6 +88,18 @@ public class WeightVector implements Value {
 	@Override
 	public void write(DataOutput out) throws IOException {
 		// Implement your solution here
+		int numOfElements = termList.size();
+		out.writeInt(docId);
+		out.writeInt(numOfElements);
+		for (int i = 0; i < numOfElements; i++) {
+			char termArray[] = termList.get(i).toCharArray();
+			int termLength = termArray.length;
+			out.writeInt(termLength);
+			for (int j = 0; j < termLength; j++) {
+				out.writeChar(termArray[j]);
+			}
+			out.writeDouble(weightList.get(i));			
+		}
 	}
 
 	/**
@@ -89,7 +109,24 @@ public class WeightVector implements Value {
 	 */
 	@Override
 	public void read(DataInput in) throws IOException {
-		// Implement your solution here
+
+		try {
+			this.clear();
+			int docId = in.readInt();
+			int numOfElements = in.readInt();
+			this.setDocId(docId);
+			for (int i = 0; i < numOfElements; i++) {
+				StringBuilder term = new StringBuilder();
+				int termLength = in.readInt();
+				for (int j = 0; j < termLength; j++) {
+					term.append(in.readChar());
+				}
+				this.add(term.toString(), in.readDouble());
+			}
+		} catch (EOFException e) {
+			System.out.println("Vector Data Read");
+		}
+		
 	}
 
 	/**
@@ -98,7 +135,16 @@ public class WeightVector implements Value {
 	@Override
 	public String toString() {
 		// Implement your solution here
-		
+		if (termList != null || weightList != null) {
+			StringBuilder vector = new StringBuilder();
+			vector.append("Document ID: " + this.docId + "\n");
+			int numOfElements = termList.size();
+			for (int i = 0; i < numOfElements; i++) {
+				vector.append("< " + termList.get(i) + " , ");
+				vector.append(weightList.get(i) + " >\n");
+			}
+			return vector.toString();
+		}
 		return "";
 	}
 
