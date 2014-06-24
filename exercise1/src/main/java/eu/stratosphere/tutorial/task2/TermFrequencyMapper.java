@@ -14,8 +14,14 @@
  **********************************************************************************************************************/
 package eu.stratosphere.tutorial.task2;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import eu.stratosphere.api.java.record.functions.MapFunction;
+import eu.stratosphere.tutorial.util.Util;
+import eu.stratosphere.types.IntValue;
 import eu.stratosphere.types.Record;
+import eu.stratosphere.types.StringValue;
 import eu.stratosphere.util.Collector;
 
 
@@ -47,6 +53,37 @@ public class TermFrequencyMapper extends MapFunction {
 	 */
 	@Override
 	public void map(Record record, Collector<Record> collector) {
-		// Implement your solution here
+
+		String document = record.getField(0, StringValue.class).toString();
+		String docArray[] = document.split(",");
+		String docIdString = docArray[0];
+		Integer docId = Integer.parseInt(docIdString);
+		StringBuilder text = new StringBuilder();
+		for (int i = 1; i < docArray.length; i++) {
+			text.append(docArray[i]);
+		}
+		String words = text.toString();
+		HashMap<String, Integer> uniqWords = new HashMap<String, Integer>();
+		HashSet<String> stopWords = Util.STOP_WORDS;
+		for (String word: words.split(" ")) {
+			if (word.matches("[\\w!.]+") && !stopWords.contains(word)) {
+				if (!uniqWords.containsKey(word)) {
+					uniqWords.put(word, 1);
+				}
+				else {
+					Integer count = uniqWords.get(word);
+					count++;
+					uniqWords.put(word, count);
+				}
+			}
+		}
+		for (String key : uniqWords.keySet()) {
+			Record emitRecord = new Record();
+			emitRecord.addField(new IntValue(docId));
+			emitRecord.addField(new StringValue(key));
+			emitRecord.addField(new IntValue(uniqWords.get(key)));
+			collector.collect(emitRecord);
+		}
+		
 	}
 }
