@@ -15,7 +15,11 @@
 package eu.stratosphere.tutorial.task3;
 
 import eu.stratosphere.api.java.record.functions.JoinFunction;
+import eu.stratosphere.tutorial.util.Util;
+import eu.stratosphere.types.DoubleValue;
+import eu.stratosphere.types.IntValue;
 import eu.stratosphere.types.Record;
+import eu.stratosphere.types.StringValue;
 import eu.stratosphere.util.Collector;
 
 /**
@@ -32,6 +36,17 @@ public class TfIdfMatcher extends JoinFunction {
 	 */
 	@Override
 	public void join(Record dfRecord, Record tfRecord, Collector<Record> collector) throws Exception {
-		// Implement your solution here
+
+		StringValue word = dfRecord.getField(0, StringValue.class);
+		IntValue docFreq = dfRecord.getField(1, IntValue.class);
+		IntValue docId = tfRecord.getField(0, IntValue.class);
+		IntValue termFreq = tfRecord.getField(2, IntValue.class);
+		DoubleValue tf_idf = new DoubleValue(termFreq.getValue() * Math.log(Util.NUM_DOCUMENTS/docFreq.getValue()));
+		Record emitRecord = new Record();
+		emitRecord.addField(docId);
+		emitRecord.addField(word);
+		emitRecord.addField(tf_idf);
+		collector.collect(emitRecord);
+		
 	}
 }
