@@ -17,7 +17,10 @@ package eu.stratosphere.tutorial.task4;
 import java.util.Iterator;
 
 import eu.stratosphere.api.java.record.functions.ReduceFunction;
+import eu.stratosphere.types.DoubleValue;
+import eu.stratosphere.types.IntValue;
 import eu.stratosphere.types.Record;
+import eu.stratosphere.types.StringValue;
 import eu.stratosphere.util.Collector;
 
 /**
@@ -33,5 +36,14 @@ public class WeightVectorReducer extends ReduceFunction {
 	@Override
 	public void reduce(Iterator<Record> records, Collector<Record> collector) throws Exception {
 		// Implement your solution here
+		WeightVector weightVector = new WeightVector();
+		while (records.hasNext()) {
+			Record record = records.next();
+			weightVector.setDocId(record.getField(0, IntValue.class).getValue());
+			weightVector.add(record.getField(1, StringValue.class).getValue(), record.getField(2, DoubleValue.class).getValue());
+		}
+		Record emitRecord = new Record();
+		emitRecord.addField(weightVector);
+		collector.collect(emitRecord);
 	}
 }
